@@ -4,10 +4,13 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-11-01",
   "vars": {
-    "PROFILE_URL": "https://github.com/dbordeleau"
+    "PROFILE_URL": "https://github.com/dbordeleau",
+    "STATE_ENDPOINT": "off"
   },
   "durable_objects": {
     "bindings": [{ "name": "GAME", "class_name": "ChessGame" }]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ChessGame"] }]
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ChessGame"] }],
+  "ratelimits": [{ "name": "CLICK_LIMITER", "namespace_id": "1001", "simple": { "limit": 8, "period": 10 } }],
+  "observability": { "enabled": true, "head_sampling_rate": 0.01 }
 }

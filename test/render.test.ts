@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { applyClick, newGame, type GameState } from "../src/game";
 import { IMAGE_HEIGHT, IMAGE_WIDTH } from "../src/geometry";
-import { hash, renderBoard, statusText } from "../src/render";
+import { fallbackSvg, hash, renderBoard, statusText } from "../src/render";
 
 const T = 1_000_000;
 
@@ -58,5 +58,43 @@ describe("renderBoard", () => {
     const b = renderBoard(applyClick(newGame(), "e2", T), T);
     expect(hash(a)).toBe(hash(a));
     expect(hash(a)).not.toBe(hash(b));
+  });
+});
+
+describe("renderBoard notice", () => {
+  it("replaces the status text and changes nothing else", () => {
+    const s = applyClick(newGame(), "e2", T);
+    const plain = renderBoard(s, T);
+    const noticed = renderBoard(s, T, "Too many clicks");
+    expect(noticed).toContain(">Too many clicks</text>");
+    expect(noticed).not.toContain("Selected e2");
+    expect(noticed.replace(">Too many clicks<", `>${statusText(s, T)}<`)).toBe(plain);
+  });
+
+  it("escapes the notice", () => {
+    const svg = renderBoard(newGame(), T, "<b>&</b>");
+    expect(svg).toContain("&lt;b&gt;&amp;&lt;/b&gt;");
+    expect(svg).not.toContain("<b>");
+  });
+
+  it("ignores an empty or null notice", () => {
+    expect(renderBoard(newGame(), T, "")).toBe(renderBoard(newGame(), T));
+    expect(renderBoard(newGame(), T, null)).toBe(renderBoard(newGame(), T));
+  });
+});
+
+describe("fallbackSvg", () => {
+  it("is a well-formed SVG of the board's outer size", () => {
+    const svg = fallbackSvg();
+    expect(svg.startsWith("<svg ")).toBe(true);
+    expect(svg.endsWith("</svg>")).toBe(true);
+    expect(svg).toContain(`width="${IMAGE_WIDTH}" height="${IMAGE_HEIGHT}"`);
+    expect(svg).toContain(`viewBox="0 0 ${IMAGE_WIDTH} ${IMAGE_HEIGHT}"`);
+    expect(svg).toContain("The board is resting. Try again later.");
+    expect(svg).not.toMatch(/https?:\/\/(?!www\.w3\.org)/);
+    // Every opened tag is closed.
+    const opened = (svg.match(/<(svg|text)\b/g) ?? []).length;
+    const closed = (svg.match(/<\/(svg|text)>/g) ?? []).length;
+    expect(opened).toBe(closed);
   });
 });
