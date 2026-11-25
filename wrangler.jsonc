@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "profile-chess",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "vars": {
+    "PROFILE_URL": "https://github.com/dbordeleau"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "GAME", "class_name": "ChessGame" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ChessGame"] }]
+}
