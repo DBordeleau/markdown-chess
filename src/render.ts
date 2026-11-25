@@ -71,7 +71,8 @@ export function statusText(state: GameState, now: number): string {
   return sel ? `${side} to move${check}. Selected ${sel}` : `${side} to move${check}`;
 }
 
-export function renderBoard(state: GameState, now: number): string {
+/** A notice, when given, takes the place of the status text. */
+export function renderBoard(state: GameState, now: number, notice?: string | null): string {
   const chess = new Chess(state.fen);
   const selected = activeSelection(state, now);
   const targets = new Set(selected ? destinations(state.fen, selected) : []);
@@ -125,15 +126,28 @@ export function renderBoard(state: GameState, now: number): string {
     }
   }
 
-  const status = statusText(state, now);
+  parts.push(statusStrip(notice ? notice : statusText(state, now)), "</svg>");
+  return parts.join("");
+}
+
+function statusStrip(status: string): string {
   // Fonts differ between viewers, so squeeze long lines to a fixed width.
   const fit = status.length > 38 ? ` textLength="${IMAGE_WIDTH - 12}" lengthAdjust="spacingAndGlyphs"` : "";
-  parts.push(
-    `<rect x="0" y="${BOARD_PX}" width="${IMAGE_WIDTH}" height="${STATUS_PX}" fill="#262421"/>`,
-    `<text x="${IMAGE_WIDTH / 2}" y="${BOARD_PX + 19}" text-anchor="middle" font-size="12" font-family="${FONT}" fill="#fff"${fit}>${esc(status)}</text>`,
-    "</svg>",
+  return (
+    `<rect x="0" y="${BOARD_PX}" width="${IMAGE_WIDTH}" height="${STATUS_PX}" fill="#262421"/>` +
+    `<text x="${IMAGE_WIDTH / 2}" y="${BOARD_PX + 19}" text-anchor="middle" font-size="12" font-family="${FONT}" fill="#fff"${fit}>${esc(status)}</text>`
   );
-  return parts.join("");
+}
+
+const FALLBACK =
+  `<svg xmlns="http://www.w3.org/2000/svg" width="${IMAGE_WIDTH}" height="${IMAGE_HEIGHT}" viewBox="0 0 ${IMAGE_WIDTH} ${IMAGE_HEIGHT}">` +
+  `<rect x="0" y="0" width="${IMAGE_WIDTH}" height="${BOARD_PX}" fill="${DARK}"/>` +
+  statusStrip("The board is resting. Try again later.") +
+  "</svg>";
+
+/** Static board-sized SVG for when the game cannot be read. */
+export function fallbackSvg(): string {
+  return FALLBACK;
 }
 
 /** Short stable hash of a string (FNV-1a, 32-bit), used for the ETag. */
