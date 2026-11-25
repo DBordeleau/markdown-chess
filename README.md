@@ -130,3 +130,7 @@ On Windows, a project in a deep folder can make the local server fail with `inte
 - `src/index.ts` is the Worker and its Durable Object. It routes requests and stores the game.
 
 Chess rules come from [chess.js](https://github.com/jhlywa/chess.js). The game is stored in one SQLite-backed Durable Object.
+
+## License
+
+[MIT](LICENSE)
